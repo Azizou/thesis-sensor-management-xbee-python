@@ -10,7 +10,7 @@ class EndDevice:
 		self.sl = None
 		self.sh = None
 		self.coord = coord
-		self.current_frame_id = 0
+		# self.current_frame_id = 0
 		self.getAddressOfCoordinator()
 	#Assuming end devices are confured with 111 (reassign panid, reassign chanel id and auto associate on power up)
 	#same pan id as coordinator
@@ -59,8 +59,12 @@ class EndDevice:
 
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='NI', parameter=self.coord.next_end_node_identifier())
 		response = self.xbee.wait_read_frame()
-
 		print response
+
+		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='WR')
+		response = self.xbee.wait_read_frame()
+		print response
+
 		if response['status'] ==b'\x00':
 			return True
 		return False
@@ -71,12 +75,24 @@ class EndDevice:
 	def set_destination_addr(self,dest_addr):
 		self.dest_addr = dest_addr
 
-	def request_data(self,next_frame_id):
-		self.xbee.tx_long_addr(dest_addr=self.dest_addr, frame_id=next_frame_id())
-		packet = self.xbee.wait_read_frame()
-		if packet['id'] == 'rx_long_addr':
-			return packet
-
+	def request_data(self):
+		#send the letter D to the end device to request data
+		print "data_request: D"
+		self.xbee.tx_long_addr(dest_addr=self.dest_addr, frame_id=self.coord.next_frame_id(), data=b'\x44')
+		status = self.xbee.wait_read_frame()
+		
+		if status['id'] == 'tx_status' and status['status']==b'\x00':
+			print "Transmited tx_request  successfully, waiting to receive data from end device"
+			packet = self.xbee.wait_read_frame()
+			print packet
+			if packet['id'] == 'rx_long_addr':
+				# print packet
+				return packet
+			else:
+				print "Unexpected packet received", packet['id']
+		else:
+			print "Tansmission failed with status response: ",status['status']
+		return False
 
 	def getAddressOfCoordinator(self):
 	    self.xbee.at(frame_id=self.coord.next_frame_id(), command='SL')
@@ -88,16 +104,18 @@ class EndDevice:
 	    response = self.xbee.wait_read_frame()
 	    self.sh = response['parameter']
 
-	def next_frame_id(self):
-		self.coord.next_frame_id()
+	# def next_frame_id(self):
+	# 	self.coord.next_frame_id()
 
-	def next_frame_id(self):
-	    if self.current_frame_id<255:
-	        self.current_frame_id +=1
-	    else:
-	        self.current_frame_id = 1
-	    return chr(self.current_frame_id)
+	# def next_frame_id(self):
+	#     if self.current_frame_id<255:
+	#         self.current_frame_id +=1
+	#     else:
+	#         self.current_frame_id = 1
+	#     return chr(self.current_frame_id)
 
+
+#should not have to do this since end devices can beconfigured remotely
 def main():
 	#set up connected coorinator
 	port = '/dev/ttyUSB0'

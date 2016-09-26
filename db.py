@@ -1,4 +1,5 @@
 import MySQLdb as db
+from binascii import hexlify
 
 class Db:
 	#use system variable to store those for security purposes
@@ -19,9 +20,9 @@ class Db:
 
 	def save_data(self, response):
 		addr = response['source_addr']
-		current, voltage, temperature = self.process_rf_data(response['rf_data'])
-		sql = "INSERT INTO `SensorMeasurements` (`id`, `sensor_id`, `created_at`, `source`, `temperature`, `voltage`, `current`)\
-		 VALUES (NULL, '{0}', CURRENT_TIMESTAMP, '{1}', '{2}', '{3}', '{4}')".format(response['sensor_id'], response['source'],
+		current, voltage, temperature = self.process_rf_data(response['rf_data'],response['sensor_id'])
+		sql = "INSERT INTO `SensorMeasurements` (`id`, `sensor_id`, `created_at`, `temperature`, `voltage`, `current`)\
+		 VALUES (NULL, '{0}', CURRENT_TIMESTAMP, '{1}', '{2}', '{3}')".format(response['sensor_id'],
 		  temperature, voltage, current)
 		print sql
 		with self.con:
@@ -30,20 +31,40 @@ class Db:
 
 
 
-	def process_rf_data(rf_data):
+	def process_rf_data(self,rf_data, sensor_id):
 		"""
 		1st 2 bytes for the current
 		2nd 2 bytes for the voltage
 		3rd 2 bytes for the temperature
+		return a float value for each of those bytes
 		"""
-		if(len(rf_data) != 3):
+		if(len(rf_data) != 6):
 			raise DataFormatError("Expected 4 byte of rf data")
-		return byteToInt(rf_data[0:2]),byteToInt(rf_data[2:4]),byteToInt(rf_data[4:6])
+		sensor_info = self.get_sensor_info(sensor_id)
+		current_bytes = int(hexlify(rf_data[0:2]),16)
+		voltage_bytes = int(hexlify(rf_data[2:4]),16)
+		temperature_bytes = int(hexlify(rf_data[4:6]),16)
+		adc_resolution = sensor_info['adc_resolution']
+		current = (1000.0 * 5 * current_bytes)/(1<<adc_resolution - 1)/(sensor_info['current_resistor'] * sensor_info['voltage_resistor'])
+		voltage = (5.0 * voltage_bytes) / (1<<adc_resolution - 1) * (sensor_info['R1'] + sensor_info['R2'])/sensor_info['R1']
+		temperature = (1.0 * temperature_bytes )/ (1<<adc_resolution - 1) * (sensor_info['maximum_temperature'] - sensor_info['minimum_temperature']) + sensor_info['minimum_temperature']
+		print "Curreent: {0:.4f}, Volatge: {1:.4f}, Temperature: {2:.3f}".format(current, voltage, temperature)
+		return current, voltage, temperature
+		#if Vo is already in the range 0 - 5V based on the value of Rl and Rs, compute Is directly
+		#Is = 1000 x Vo / (Rs x Rl) where Vo = 5 * current_bytes/(1<<10 - 1)
+		#Else Vo = 
+		#current = Vs/Rs
+		#Vs = Vo/Rl/1000
 
-	def byteToInt(byte):
-		if hasattr(byte, 'bit_length'):
-			return byte
-		return ord(byte) if hasattr(byte, 'encode') else byte[0]
+
+	def get_sensor_info(self,sensor_id):
+		sql = "SELECT minimum_temperature, maximum_temperature, adc_resolution, current_resistor, voltage_resistor, R1, R2 FROM Sensors WHERE active=1 AND id='{0}'".format(sensor_id)
+		print sql
+		cur = self.con.cursor(db.cursors.DictCursor)
+		cur.execute(sql)
+		res =  cur.fetchone()
+		print res
+		return res
 
 
 class DataFormatError(Exception):
