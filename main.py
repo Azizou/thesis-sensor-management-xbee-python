@@ -7,7 +7,7 @@ Collect sensor data every period of time
 Call a service to update the cloud server with helth status twice a day
 """
 
-delay = 10
+delay = 20
 if __name__ == '__main__':
 	status,coord = network_setup(sys.argv)
 	if status:

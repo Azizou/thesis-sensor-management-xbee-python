@@ -79,7 +79,7 @@ class Coordinator:
 		devices = db.get_active_sensors()
 		end_device = EndDevice(self, self.xbee)
 		for device in devices:
-			# print device
+			print device
 			end_device.set_destination_addr(device['serial_id'])
 			status = end_device.configure()
 			if status:
@@ -129,11 +129,11 @@ def network_setup(argv):
 	print "Intializing coordinator instance"
 	coord = Coordinator(port,baude_rate,node_identifier)
 	print "Configuring coordinator"
-	# status = coord.configure()
-	# print "configuration status",status
+	status = coord.configure()
+	print "configuration status",status
 	# print "Collecting data from end devices"
 	# coord.collect_data()
-	if 1:# status:
+	if status:
 		# base_node_identifier = "END DEVICE"
 		# print "Configuring end devices"
 		# status = coord.setup_end_devices(base_node_identifier)
