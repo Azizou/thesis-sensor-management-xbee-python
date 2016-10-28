@@ -5,6 +5,8 @@ from db import Db
 import binascii, time
 from end_device import EndDevice
 from base64 import b16decode
+import logging
+
 # import db.py as db, end_device.py as end_device
 class Coordinator:
 	def __init__(self,port,baude_rate,node_identifier):
@@ -16,7 +18,8 @@ class Coordinator:
 			self.end_node_counter = 0
 			self.base_end_node_identifier = "END DEVICE"
 		except Exception as e:
-			print e, "\nProgram will now exit"
+			logging.critical(e)
+			# "\nProgram will now exit"
 			exit(2)
 		#self.configure()
 		# self.setup_end_devices()
@@ -25,14 +28,6 @@ class Coordinator:
 	def configure(self):
 		#ACCEPT end-device ASSOCIATION, CHANNEL AND PANID reassignment
 		response_status = []
-		print "A2"
-		print "MY"
-		print "AP"
-		print "EE"
-		print "NI"
-		print "CE"
-		print "WR"
-		
 		self.xbee.at(frame_id=self.next_frame_id(), command='A2', parameter=b'\x07')
 		response = self.xbee.wait_read_frame()
 		logging.info(response)
@@ -63,14 +58,21 @@ class Coordinator:
 		response = self.xbee.wait_read_frame()
 		response_status.append(response['status'])
 
-		if response['status']==b'\x00':
-			print response_status
-			print " Coordinator configuration completed successfully"
-			return True
+		for st in response_status:
+			if st != b'\x00':
+				logging.warning("An error occured while configuring the coordinator xbee node")
+				return False
 		else:
-			print response_status
-			print "An erro occured during configuration : response = ",response
-			return False
+			logging.info("Coordinator configuration completed successfully")
+			return True
+		# if response['status']==b'\x00':
+		# 	print response_status
+		# 	print " Coordinator configuration completed successfully"
+		# 	return True
+		# else:
+		# 	print response_status
+		# 	print "An erro occured during configuration : response = ",response
+		# 	return False
 
 	def next_frame_id(self):
 	    if self.current_frame_id<255:
@@ -86,7 +88,7 @@ class Coordinator:
 		end_device = EndDevice(self, self.xbee)
 		for device in devices:
 			print device
-			end_device.set_destination_addr(b16decode(device['serial_id'])
+			end_device.set_destination_addr(b16decode(device['serial_id']))
 			status = end_device.configure()
 			if status:
 				print "End device with id",	device['serial_id'],'configured successfully'
