@@ -1,16 +1,24 @@
 import MySQLdb as db
 from binascii import hexlify
+import logging
+import ConfigParser
 
 class Db:
 	#use system variable to store those for security purposes
-	HOST = 'localhost'
-	USERNAME = 'dev'
-	PASSWORD = 'dev'
-	DB_NAME = 'phss_healthm'
+	# HOST = 'localhost'
+	# USERNAME = 'dev'
+	# PASSWORD = 'dev'
+	# DB_NAME = 'phss_healthm'
 
 	def __init__(self):
-		self.con = db.connect(self.HOST,self.USERNAME,self.PASSWORD,self.DB_NAME)
-		print "Db: DB connection successful."
+		logging.info("Initializing the database")
+		cfg = ConfigParser.ConfigParser()
+		cfg.read('config.ini')
+		self.con = db.connect(cfg.get('database','host'),cfg.get('database','username'),cfg.get('database','password'),cfg.get('database','dbname'))
+		if not self.con:
+			logging.error("Unable to connect to the database")
+			exit(0)
+		logging.info("Database connection successful.")
 
 	def get_active_sensors(self):
 	    sql = "SELECT id, serial_id, source FROM Sensors WHERE active=1"
@@ -36,6 +44,8 @@ class Db:
 		1st 2 bytes for the current
 		2nd 2 bytes for the voltage
 		3rd 2 bytes for the temperature
+		For the temp, scale factor is 10mV/degree C
+
 		return a float value for each of those bytes
 		"""
 		if(len(rf_data) != 6):
@@ -45,9 +55,9 @@ class Db:
 		voltage_bytes = int(hexlify(rf_data[2:4]),16)
 		temperature_bytes = int(hexlify(rf_data[4:6]),16)
 		adc_resolution = sensor_info['adc_resolution']
-		current = (1000.0 * 5 * current_bytes)/(1<<adc_resolution - 1)/(sensor_info['current_resistor'] * sensor_info['voltage_resistor'])
-		voltage = (5.0 * voltage_bytes) / (1<<adc_resolution - 1) * (sensor_info['R1'] + sensor_info['R2'])/sensor_info['R1']
-		temperature = (1.0 * temperature_bytes )/ (1<<adc_resolution - 1) * (sensor_info['maximum_temperature'] - sensor_info['minimum_temperature']) + sensor_info['minimum_temperature']
+		current = (1000.0 * 5 * current_bytes)/((1<<adc_resolution) - 1)/(sensor_info['current_resistor'] * sensor_info['voltage_resistor'])
+		voltage = (5.0 * voltage_bytes) / ((1<<adc_resolution) - 1) * (sensor_info['R1'] + sensor_info['R2'])/sensor_info['R1']
+		temperature = (500.0 * temperature_bytes )/ ((1<<adc_resolution) - 1) 
 		print "Curreent: {0:.4f}, Volatge: {1:.4f}, Temperature: {2:.3f}".format(current, voltage, temperature)
 		return current, voltage, temperature
 		#if Vo is already in the range 0 - 5V based on the value of Rl and Rs, compute Is directly

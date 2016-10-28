@@ -2,8 +2,9 @@ import serial
 import xbee
 import sys #handle cmd_line args
 from db import Db
-import binascii
+import binascii, time
 from end_device import EndDevice
+from base64 import b16decode
 # import db.py as db, end_device.py as end_device
 class Coordinator:
 	def __init__(self,port,baude_rate,node_identifier):
@@ -25,34 +26,39 @@ class Coordinator:
 		#ACCEPT end-device ASSOCIATION, CHANNEL AND PANID reassignment
 		response_status = []
 		print "A2"
+		print "MY"
+		print "AP"
+		print "EE"
+		print "NI"
+		print "CE"
+		print "WR"
+		
 		self.xbee.at(frame_id=self.next_frame_id(), command='A2', parameter=b'\x07')
 		response = self.xbee.wait_read_frame()
+		logging.info(response)
 		response_status.append(response['status'])
-		print "MY"
 		self.xbee.at(frame_id=self.next_frame_id(), command='MY', parameter=b'\xFF\xFF')
 		response = self.xbee.wait_read_frame()
+		logging.info(response)
 		response_status.append(response['status'])
-		print "AP"
 		self.xbee.at(frame_id=self.next_frame_id(), command='AP', parameter=b'\x02')
 		response = self.xbee.wait_read_frame()
+		logging.info(response)
 		response_status.append(response['status'])
-		print "EE"
 		self.xbee.at(frame_id=self.next_frame_id(), command='EE', parameter=b'\x00')
 		response = self.xbee.wait_read_frame()
+		logging.info(response)
 		response_status.append(response['status'])
 
 		# self.xbee.at(frame_id=self.next_frame_id(), command='KY', parameter=b'\x07\x07\x07\x07\x07\x07\x07\x07\x08\x08\x08\x08\x08\x08\x08\x08')
 		# response = self.xbee.wait_read_frame()
 		# print response
-		print "NI"
 		self.xbee.at(frame_id=self.next_frame_id(), command='NI', parameter=self.node_identifier)
 		response = self.xbee.wait_read_frame()
 		response_status.append(response['status'])
-		print "CE"
 		self.xbee.at(frame_id=self.next_frame_id(), command='CE', parameter=b'\x01')
 		response = self.xbee.wait_read_frame()
 		response_status.append(response['status'])
-		print "WR"
 		self.xbee.at(frame_id=self.next_frame_id(), command='WR')
 		response = self.xbee.wait_read_frame()
 		response_status.append(response['status'])
@@ -80,7 +86,7 @@ class Coordinator:
 		end_device = EndDevice(self, self.xbee)
 		for device in devices:
 			print device
-			end_device.set_destination_addr(device['serial_id'])
+			end_device.set_destination_addr(b16decode(device['serial_id'])
 			status = end_device.configure()
 			if status:
 				print "End device with id",	device['serial_id'],'configured successfully'
@@ -101,7 +107,7 @@ class Coordinator:
 		end_device = EndDevice(self, self.xbee)
 		for device in devices:
 			print "Setting end device address"
-			end_device.set_destination_addr(device['serial_id'])
+			end_device.set_destination_addr(b16decode(device['serial_id']))
 			print "Requesting data from ",device['serial_id']
 			response = end_device.request_data()
 			print "Data received",response
@@ -131,16 +137,17 @@ def network_setup(argv):
 	print "Configuring coordinator"
 	status = coord.configure()
 	print "configuration status",status
-	# print "Collecting data from end devices"
+	print "Collecting data from end devices"
 	# coord.collect_data()
 	if status:
-		# base_node_identifier = "END DEVICE"
-		# print "Configuring end devices"
-		# status = coord.setup_end_devices(base_node_identifier)
-		# if status:
-		# 	print "Network setup completed successfully!"
+		base_node_identifier = "END DEVICE"
+		print "Configuring end devices"
+		status = coord.setup_end_devices(base_node_identifier)
+		if status:
+			print "Network setup completed successfully!"
 		return True,coord
 	return False,None
 
 if __name__ == '__main__':
 	network_setup(sys.argv)
+	time.sleep(10)
