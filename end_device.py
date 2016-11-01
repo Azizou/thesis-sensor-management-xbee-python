@@ -18,40 +18,40 @@ class EndDevice:
 	#for each request wait for 10s for a response
 	#use a 128 bit key after enabling the encryption key
 	#set the  node indicator for each end device
-	#All this either in the xctu-software or using a script (peferable) with command line arguments
+	#All this either in the xctu-software or using a script (preferable) with command line arguments
 
 	""" 
-		set the coordinator addess on the end device
-		disbale 16 bit communication
+		set the coordinator address on the end device
+		disable 16 bit communication
 	"""
 	def configure(self):
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='AP', parameter=b'\x02')
 		response = self.xbee.wait_read_frame()
-		print response
+		# print response
 
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='CE', parameter=b'\x00')
 		response = self.xbee.wait_read_frame()
-		print response
+		# print response
 
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='A1', parameter=b'\x07')
 		response = self.xbee.wait_read_frame()
-		print response
+		# print response
 
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='DL', parameter=self.sl)
 		response = self.xbee.wait_read_frame()
-		print response
+		# print response
 
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='DH', parameter=self.sh)
 		response = self.xbee.wait_read_frame()
-		print response
+		# print response
 
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='MY', parameter=b'\xFF\xFF')
 		response = self.xbee.wait_read_frame()
-		print response
+		# print response
 
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='EE', parameter=b'\x00')
 		response = self.xbee.wait_read_frame()
-		print response
+		# print response
 
 		# self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='KY', parameter=b'\x07\x07\x07\x07\x07\x07\x07\x07\x08\x08\x08\x08\x08\x08\x08\x08')
 		# response = self.xbee.wait_read_frame()
@@ -59,11 +59,11 @@ class EndDevice:
 
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='NI', parameter=self.coord.next_end_node_identifier())
 		response = self.xbee.wait_read_frame()
-		print response
+		# print response
 
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='WR')
 		response = self.xbee.wait_read_frame()
-		print response
+		# print response
 
 		if response['status'] ==b'\x00':
 			return True
@@ -79,10 +79,10 @@ class EndDevice:
 		#send the letter D to the end device to request data
 		print "data_request: D"
 		self.xbee.tx_long_addr(dest_addr=self.dest_addr, frame_id=self.coord.next_frame_id(), data=b'\x44')
-		status = self.xbee.wait_read_frame()
-		
-		if status['id'] == 'tx_status' and status['status']==b'\x00':
-			print "Transmited tx_request  successfully, waiting to receive data from end device"
+		tx_long_addr = self.xbee.wait_read_frame()
+		# print "Rsult L",tx_long_addr
+		if tx_long_addr['id'] == 'tx_status' and tx_long_addr['status']==b'\x00':
+			print "Transmitted tx_request  successfully, waiting to receive data from end device"
 			packet = self.xbee.wait_read_frame()
 			print packet
 			if packet['id'] == 'rx_long_addr':
@@ -91,7 +91,7 @@ class EndDevice:
 			else:
 				print "Unexpected packet received", packet['id']
 		else:
-			print "Tansmission failed with status response: ",status['status']
+			print "Transmission failed with status response: ",tx_long_addr['status']
 		return False
 
 	def getAddressOfCoordinator(self):
@@ -115,7 +115,7 @@ class EndDevice:
 	#     return chr(self.current_frame_id)
 
 
-#should not have to do this since end devices can beconfigured remotely
+#should not have to do this since end devices can be configured remotely
 def main():
 	#set up connected coorinator
 	port = '/dev/ttyUSB0'

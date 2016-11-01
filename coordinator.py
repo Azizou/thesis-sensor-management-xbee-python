@@ -15,10 +15,9 @@ class Coordinator:
 			self.end_node_counter = 0
 			self.base_end_node_identifier = "END DEVICE"
 		except Exception as e:
-			print e, "\nProgram will now exit"
+			print "A critical error occured and the program will exit"
+			print e
 			exit(2)
-		#self.configure()
-		# self.setup_end_devices()
 
 
 	def configure(self):
@@ -41,9 +40,6 @@ class Coordinator:
 		response = self.xbee.wait_read_frame()
 		response_status.append(response['status'])
 
-		# self.xbee.at(frame_id=self.next_frame_id(), command='KY', parameter=b'\x07\x07\x07\x07\x07\x07\x07\x07\x08\x08\x08\x08\x08\x08\x08\x08')
-		# response = self.xbee.wait_read_frame()
-		# print response
 		print "NI"
 		self.xbee.at(frame_id=self.next_frame_id(), command='NI', parameter=self.node_identifier)
 		response = self.xbee.wait_read_frame()
@@ -80,7 +76,7 @@ class Coordinator:
 		end_device = EndDevice(self, self.xbee)
 		for device in devices:
 			print device
-			end_device.set_destination_addr(device['serial_id'])
+			end_device.set_destination_addr(binascii.unhexlify(device['serial_id']))
 			status = end_device.configure()
 			if status:
 				print "End device with id",	device['serial_id'],'configured successfully'
@@ -101,19 +97,24 @@ class Coordinator:
 		end_device = EndDevice(self, self.xbee)
 		for device in devices:
 			print "Setting end device address"
-			end_device.set_destination_addr(device['serial_id'])
-			print "Requesting data from ",device['serial_id']
+			end_device.set_destination_addr(binascii.unhexlify(device['serial_id']))
+
+			print "Requesting data from ",device['serial_id'], binascii.unhexlify(device['serial_id'])
 			response = end_device.request_data()
-			print "Data received",response
-			response['sensor_id'] = device['id']
-			response['source'] = device['source']
-			print "Saving the data"
-			db.save_data(response)
+			print response
+			if response:
+				print "Data received",response
+				response['sensor_id'] = device['id']
+				response['source'] = device['source']
+				print "Saving the data"
+				db.save_data(response)
+			else:
+				print "Device not responding"
 
 
 def network_setup(argv):
-	#set up connected coorinator
-	port = '/dev/ttyUSB1'
+	#set up connected coordinator
+	port = '/dev/ttyUSB0'
 	baude_rate = 9600
 	node_identifier = 'MASTER'
 	if len(argv) == 2:
@@ -126,19 +127,17 @@ def network_setup(argv):
 		baude_rate = argv[2]
 		node_identifier = argv[3]
 
-	print "Intializing coordinator instance"
+	print "Initializing coordinator instance"
 	coord = Coordinator(port,baude_rate,node_identifier)
 	print "Configuring coordinator"
 	status = coord.configure()
 	print "configuration status",status
-	# print "Collecting data from end devices"
-	# coord.collect_data()
 	if status:
-		# base_node_identifier = "END DEVICE"
-		# print "Configuring end devices"
-		# status = coord.setup_end_devices(base_node_identifier)
-		# if status:
-		# 	print "Network setup completed successfully!"
+		base_node_identifier = "END DEVICE"
+		print "Configuring end devices"
+		status = coord.setup_end_devices(base_node_identifier)
+		if status:
+			print "Network setup completed successfully!"
 		return True,coord
 	return False,None
 

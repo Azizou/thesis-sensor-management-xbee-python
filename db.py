@@ -10,7 +10,7 @@ class Db:
 
 	def __init__(self):
 		self.con = db.connect(self.HOST,self.USERNAME,self.PASSWORD,self.DB_NAME)
-		print "Db: DB connection successful."
+		# print "Db: DB connection successful."
 
 	def get_active_sensors(self):
 	    sql = "SELECT id, serial_id, source FROM Sensors WHERE active=1"
@@ -24,7 +24,7 @@ class Db:
 		sql = "INSERT INTO `SensorMeasurements` (`id`, `sensor_id`, `created_at`, `temperature`, `voltage`, `current`)\
 		 VALUES (NULL, '{0}', CURRENT_TIMESTAMP, '{1}', '{2}', '{3}')".format(response['sensor_id'],
 		  temperature, voltage, current)
-		print sql
+		# print sql
 		with self.con:
 			cur = self.con.cursor()
 			cur.execute(sql)
@@ -44,11 +44,14 @@ class Db:
 		current_bytes = int(hexlify(rf_data[0:2]),16)
 		voltage_bytes = int(hexlify(rf_data[2:4]),16)
 		temperature_bytes = int(hexlify(rf_data[4:6]),16)
+
+		# print "Curreent: {0}, Volatge: {1}, Temperature: {2}".format(current_bytes, voltage_bytes, temperature_bytes)
+		
 		adc_resolution = sensor_info['adc_resolution']
-		current = (1000.0 * 5 * current_bytes)/(1<<adc_resolution - 1)/(sensor_info['current_resistor'] * sensor_info['voltage_resistor'])
-		voltage = (5.0 * voltage_bytes) / (1<<adc_resolution - 1) * (sensor_info['R1'] + sensor_info['R2'])/sensor_info['R1']
-		temperature = (1.0 * temperature_bytes )/ (1<<adc_resolution - 1) * (sensor_info['maximum_temperature'] - sensor_info['minimum_temperature']) + sensor_info['minimum_temperature']
-		print "Curreent: {0:.4f}, Volatge: {1:.4f}, Temperature: {2:.3f}".format(current, voltage, temperature)
+		current = (1000.0 * 5 * current_bytes)/((1<<adc_resolution)-1)/(sensor_info['current_resistor'] * sensor_info['voltage_resistor'])
+		voltage = (5.0 * voltage_bytes) / ((1<<adc_resolution)-1) * (sensor_info['R1'] + sensor_info['R2'])/sensor_info['R1']
+		temperature = (500.0 * temperature_bytes )/ ((1<<adc_resolution)-1) #(sensor_info['maximum_temperature'] - sensor_info['minimum_temperature']) + sensor_info['minimum_temperature']
+		# print "Curreent: {0:.4f}, Volatge: {1:.4f}, Temperature: {2:.3f}".format(current, voltage, temperature)
 		return current, voltage, temperature
 		#if Vo is already in the range 0 - 5V based on the value of Rl and Rs, compute Is directly
 		#Is = 1000 x Vo / (Rs x Rl) where Vo = 5 * current_bytes/(1<<10 - 1)
