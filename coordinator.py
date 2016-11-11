@@ -69,7 +69,7 @@ class Coordinator:
 	        self.current_frame_id = 1
 	    return chr(self.current_frame_id)
 	
-	def setup_end_devices(self,node_identifier):
+	def setup_end_devices(self):
 		db = Db()
 		succes = 0
 		devices = db.get_active_sensors()
@@ -133,9 +133,8 @@ def network_setup(argv):
 	status = coord.configure()
 	print "configuration status",status
 	if status:
-		base_node_identifier = "END DEVICE"
 		print "Configuring end devices"
-		status = coord.setup_end_devices(base_node_identifier)
+		status = coord.setup_end_devices()
 		if status:
 			print "Network setup completed successfully!"
 		return True,coord

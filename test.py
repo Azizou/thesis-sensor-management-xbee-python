@@ -44,7 +44,7 @@ def init_gateway(user_id, serial_id):
 
 
 def main():
-	logging.basicConfig(format='%(asctime)s:%(name)s:%(levelname)s:%(funcName)s:%(message)s',filename="sensor.log",level=logging.INFO)
+	logging.basicConfig(format='%(asctime)s:%(name)s:%(levelname)s:%(funcName)s:%(message)s',filename="sensor.log")
 	logging.info("Logging for gateway node started")
 	delay = 15
 	if len(sys.argv) < 2:

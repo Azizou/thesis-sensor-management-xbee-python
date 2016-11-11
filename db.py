@@ -9,12 +9,12 @@ class Db:
 	DB_NAME = 'phss_healthm'
 
 	def __init__(self):
-		self.con = db.connect(self.HOST,self.USERNAME,self.PASSWORD,self.DB_NAME)
+		self.connection = db.connect(self.HOST,self.USERNAME,self.PASSWORD,self.DB_NAME)
 		# print "Db: DB connection successful."
 
 	def get_active_sensors(self):
 	    sql = "SELECT id, serial_id, source FROM Sensors WHERE active=1"
-	    cur = self.con.cursor(db.cursors.DictCursor)
+	    cur = self.connection.cursor(db.cursors.DictCursor)
 	    cur.execute(sql)
 	    return  cur.fetchall()
 
@@ -25,8 +25,8 @@ class Db:
 		 VALUES (NULL, '{0}', CURRENT_TIMESTAMP, '{1}', '{2}', '{3}')".format(response['sensor_id'],
 		  temperature, voltage, current)
 		# print sql
-		with self.con:
-			cur = self.con.cursor()
+		with self.connection:
+			cur = self.connection.cursor()
 			cur.execute(sql)
 
 
@@ -63,7 +63,7 @@ class Db:
 	def get_sensor_info(self,sensor_id):
 		sql = "SELECT minimum_temperature, maximum_temperature, adc_resolution, current_resistor, voltage_resistor, R1, R2 FROM Sensors WHERE active=1 AND id='{0}'".format(sensor_id)
 		print sql
-		cur = self.con.cursor(db.cursors.DictCursor)
+		cur = self.connection.cursor(db.cursors.DictCursor)
 		cur.execute(sql)
 		res =  cur.fetchone()
 		print res
