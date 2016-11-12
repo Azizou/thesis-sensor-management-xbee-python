@@ -10,13 +10,13 @@ import coordinator
 base_url = 'http://localhost/~azizou/gateway_node'
 def post_sensor_data():
 	time = datetime.now()
-	print "Time :",time
+	# print "Time :",time
 	if time.hour < 6 or time.hour > 20:
 		return
 	url = base_url + '/SensorMeasurementsPostService.php'
 	response = requests.get(url)
 	logging.info("Response code: "+ str(response.content))
-	# print response.content
+	print "Time :",time,"Measurement Post Response:",response.content
 
 def init_gateway(user_id, serial_id):
 	url = base_url + '/RegisterGatewayNode.php'
@@ -24,11 +24,11 @@ def init_gateway(user_id, serial_id):
 	if response.status_code == 200:
 		if response.content == '1':
 			logging.info("Gateway registration successful. Response: 1")
-			# Register sensor nodes
 			url = base_url + '/RegisterAllSensorNodes.php'
 			response = requests.get(url)
 			if response.status_code == 200:
 				if response.content == '1':
+					print "Registration successfull"
 					logging.info("All Sensor nodes have been registered successfully")
 				else:
 					logging.warning("Some sensor nodes could not be registered")
@@ -59,20 +59,17 @@ def main():
     # Setup jobs for posting data to cloud
 	scheduler = BackgroundScheduler()
 	scheduler.add_job(post_sensor_data, 'interval', seconds=5, id='post_job')
-	# scheduler.add_job(post_sensor_data, 'interval', seconds=1, id='post_job')
 	time.sleep(delay)
 	scheduler.start()
 
 	print('Press Ctrl+{0} to exit'.format('Break' if os.name == 'nt' else 'C'))
 
 	try:
-		# This is here to simulate application activity (which keeps the main thread alive).
 		while True:
 			coord.collect_data()
 			time.sleep(delay)
 
 	except (KeyboardInterrupt, SystemExit):
-		# Not strictly necessary if daemonic mode is enabled but should be done if possible
 		scheduler.shutdown()
 
 main()
