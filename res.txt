@@ -1,0 +1,68 @@
+Registration successfull
+Initializing coordinator instance
+Configuring coordinator
+configuration status True
+Configuring end devices
+End device with id 0013A20040E4E730 configured successfully
+Network setup completed successfully!
+Initialization of gateway node and sensor network complete
+Press Ctrl+C to exit
+Requestt data from 0013A20040E4E730
+Time : 2016-11-12 22:09:17.584905 Measurement Post Response: 1
+Time : 2016-11-12 22:09:27.585457 Measurement Post Response: 1
+Data received: {'rf_data': '\x01\x7f\x02\xfe\x03\xff', 'rssi': 'A', 'source_addr': '\x00\x13\xa2\x00@\xe4\xe70', 'id': 'rx_long_addr', 'options': '\x00'}
+Time : 2016-11-12 22:09:37.586049 Measurement Post Response: 1
+Requestt data from 0013A20040E4E730
+Data received: {'rf_data': '\x01\x7f\x02\xfe\x03\xff', 'rssi': '>', 'source_addr': '\x00\x13\xa2\x00@\xe4\xe70', 'id': 'rx_long_addr', 'options': '\x00'}
+Time : 2016-11-12 22:09:47.586123 Measurement Post Response: 1
+Registration successfull
+Initializing coordinator instance
+Configuring coordinator
+configuration status True
+Configuring end devices
+End device with id 0013A20040E4E730 configured successfully
+Network setup completed successfully!
+Initialization of gateway node and sensor network complete
+Press Ctrl+C to exit
+Requestt data from 0013A20040E4E730
+Time : 2016-11-12 22:11:13.555772 Measurement Post Response: 1
+Data received: {'rf_data': '\x01\x7f\x02\xfe\x03\xff', 'rssi': 'B', 'source_addr': '\x00\x13\xa2\x00@\xe4\xe70', 'id': 'rx_long_addr', 'options': '\x00'}
+Time : 2016-11-12 22:11:23.556206 Measurement Post Response: 1
+Time : 2016-11-12 22:11:33.557358 Measurement Post Response: 1
+Requestt data from 0013A20040E4E730
+Data received: {'rf_data': '\x01\x7f\x02\xfe\x03\xff', 'rssi': 'B', 'source_addr': '\x00\x13\xa2\x00@\xe4\xe70', 'id': 'rx_long_addr', 'options': '\x00'}
+Time : 2016-11-12 22:11:43.556981 Measurement Post Response: 1
+Time : 2016-11-12 22:11:53.556728 Measurement Post Response: 1
+Requestt data from 0013A20040E4E730
+Data received: {'rf_data': '\x01\x7f\x02\xfe\x03\xff', 'rssi': 'B', 'source_addr': '\x00\x13\xa2\x00@\xe4\xe70', 'id': 'rx_long_addr', 'options': '\x00'}
+Time : 2016-11-12 22:12:03.557224 Measurement Post Response: 1
+Time : 2016-11-12 22:12:13.556507 Measurement Post Response: 1
+Requestt data from 0013A20040E4E730
+Data received: {'rf_data': '\x01\x7f\x02\xfe\x03\xff', 'rssi': 'B', 'source_addr': '\x00\x13\xa2\x00@\xe4\xe70', 'id': 'rx_long_addr', 'options': '\x00'}
+Time : 2016-11-12 22:12:23.557175 Measurement Post Response: 1
+Requestt data from 0013A20040E4E730
+Time : 2016-11-12 22:12:33.556594 Measurement Post Response: 1
+Data received: {'rf_data': '\x01\x7f\x02\xfe\x03\xff', 'rssi': 'A', 'source_addr': '\x00\x13\xa2\x00@\xe4\xe70', 'id': 'rx_long_addr', 'options': '\x00'}
+Time : 2016-11-12 22:12:43.557524 Measurement Post Response: 1
+Requestt data from 0013A20040E4E730
+Time : 2016-11-12 22:12:53.557919 Measurement Post Response: 1
+Data received: {'rf_data': '\x01\x7f\x02\xfe\x03\xff', 'rssi': 'B', 'source_addr': '\x00\x13\xa2\x00@\xe4\xe70', 'id': 'rx_long_addr', 'options': '\x00'}
+Time : 2016-11-12 22:13:03.555955 Measurement Post Response: 1
+Requestt data from 0013A20040E4E730
+Data received: {'rf_data': '\x01\x7f\x02\xfe\x03\xff', 'rssi': 'A', 'source_addr': '\x00\x13\xa2\x00@\xe4\xe70', 'id': 'rx_long_addr', 'options': '\x00'}
+Time : 2016-11-12 22:13:13.555843 Measurement Post Response: 1
+Time : 2016-11-12 22:13:23.557439 Measurement Post Response: 1
+Requestt data from 0013A20040E4E730
+Data received: {'rf_data': '\x01\x7f\x02\xfe\x03\xff', 'rssi': 'A', 'source_addr': '\x00\x13\xa2\x00@\xe4\xe70', 'id': 'rx_long_addr', 'options': '\x00'}
+Time : 2016-11-12 22:13:33.556151 Measurement Post Response: 1
+Time : 2016-11-12 22:13:43.555931 Measurement Post Response: 1
+Requestt data from 0013A20040E4E730
+Data received: {'rf_data': '\x01\x7f\x02\xfe\x03\xff', 'rssi': 'A', 'source_addr': '\x00\x13\xa2\x00@\xe4\xe70', 'id': 'rx_long_addr', 'options': '\x00'}
+Time : 2016-11-12 22:13:53.555753 Measurement Post Response: 1
+Requestt data from 0013A20040E4E730
+Time : 2016-11-12 22:14:03.555854 Measurement Post Response: 1
+Data received: {'rf_data': '\x01\x7f\x02\xfe\x03\xff', 'rssi': 'A', 'source_addr': '\x00\x13\xa2\x00@\xe4\xe70', 'id': 'rx_long_addr', 'options': '\x00'}
+Time : 2016-11-12 22:14:13.555460 Measurement Post Response: 1
+Requestt data from 0013A20040E4E730
+Time : 2016-11-12 22:14:23.555836 Measurement Post Response: 1
+Data received: {'rf_data': '\x01\x7f\x02\xfe\x03\xff', 'rssi': 'A', 'source_addr': '\x00\x13\xa2\x00@\xe4\xe70', 'id': 'rx_long_addr', 'options': '\x00'}

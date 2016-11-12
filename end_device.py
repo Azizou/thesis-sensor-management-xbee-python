@@ -3,7 +3,7 @@
 	@file: end_device.py
 	@description: represent an end device in the wireless sensor network.
 """
-
+import logging
 class EndDevice:
 	def __init__(self, coord, xbee, dest_addr=None):
 		self.xbee = xbee
@@ -11,112 +11,63 @@ class EndDevice:
 		self.sl = None
 		self.sh = None
 		self.coord = coord
-		self.getAddressOfCoordinator()
-	#Assuming end devices are confured with 111 (reassign panid, reassign chanel id and auto associate on power up)
-	#same pan id as coordinator
-	#Use only 64 bit addressing
-	#for each request wait for 10s for a response
-	#use a 128 bit key after enabling the encryption key
-	#set the  node indicator for each end device
-	#All this either in the xctu-software or using a script (preferable) with command line arguments
 
-	""" 
-		set the coordinator address on the end device
-		disable 16 bit communication
-	"""
 	
 	def configure(self):
+		response_status = []
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='AP', parameter=b'\x02')
 		response = self.xbee.wait_read_frame()
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='CE', parameter=b'\x00')
 		response = self.xbee.wait_read_frame()
-		
-
+		response_status.append(response['status'])
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='A1', parameter=b'\x07')
 		response = self.xbee.wait_read_frame()
-		
-
+		response_status.append(response['status'])
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='DL', parameter=self.sl)
 		response = self.xbee.wait_read_frame()
-		
-
+		response_status.append(response['status'])
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='DH', parameter=self.sh)
 		response = self.xbee.wait_read_frame()
-		
-
+		response_status.append(response['status'])
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='MY', parameter=b'\xFF\xFF')
 		response = self.xbee.wait_read_frame()
-		
-
+		response_status.append(response['status'])
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='EE', parameter=b'\x00')
 		response = self.xbee.wait_read_frame()
-		
-
+		response_status.append(response['status'])
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='NI', parameter=self.coord.next_end_node_identifier())
 		response = self.xbee.wait_read_frame()
-		
-
+		response_status.append(response['status'])
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='WR')
 		response = self.xbee.wait_read_frame()
-		
+		response_status.append(response['status'])
 
-		if response['status'] ==b'\x00':
-			return True
-		return False
-	    
+		for st in response_status:
+			if st != b'\x00':
+				logging.warning("An error occured while configuring the end_device xbee node")
+				return False
+		else:
+			logging.info("End Node configuration completed successfully")
+		return True
 
 	def set_destination_addr(self,dest_addr):
 		self.dest_addr = dest_addr
 
 	def request_data(self):
-		#send the letter D to the end device to request data
-		print "data_request: D"
 		self.xbee.tx_long_addr(dest_addr=self.dest_addr, frame_id=self.coord.next_frame_id(), data=b'\x44')
 		tx_long_addr = self.xbee.wait_read_frame()
-		# print "Rsult L",tx_long_addr
 		if tx_long_addr['id'] == 'tx_status' and tx_long_addr['status']==b'\x00':
-			print "Transmitted tx_request  successfully, waiting to receive data from end device"
 			packet = self.xbee.wait_read_frame()
-			print packet
 			if packet['id'] == 'rx_long_addr':
-				# print packet
 				return packet
 			else:
-				print "Unexpected packet received", packet['id']
+				logging.error("Unexpected packet received", packet['id'])
 		else:
-			print "Transmission failed with status response: ",tx_long_addr['status']
+			logging.warning("Transmission failed with status response: ",tx_long_addr['status'])
 		return False
 
-	def getAddressOfCoordinator(self):
-	    self.xbee.at(frame_id=self.coord.next_frame_id(), command='SL')
-	    response = self.xbee.wait_read_frame()
-	    logging.info(response)
-	    self.sl = response['parameter']
-
-	    self.xbee.at(frame_id=self.coord.next_frame_id(), command='SH')
-	    response = self.xbee.wait_read_frame()
-	    self.sh = response['parameter']
-
-
-#should not have to do this since end devices can be configured remotely
 def main():
-	#set up connected coorinator
-	port = '/dev/ttyUSB0'
-	baude_rate = 9600
-	node_identifier = 'END DEVICE 1'
-	if len(sys.argv) == 2:
-		port = sys.argv[1]
-	elif len(sys.argv) == 3:
-		port = sys.argv[1]
-		baude_rate = sys.argv[2]
-	elif len(sys.argv)== 4:
-		port = sys.argv[1]
-		baude_rate = sys.argv[2]
-		node_identifier = sys.argv[3]
-
-	coord = Coorinator(port,baude_rate,node_identifier)
-	coord.setup_end_devices()
-	print coord.configure()
+	print "Sorry, currently configuration is only done remotely"
 
 
 if __name__ == '__main__':

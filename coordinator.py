@@ -1,10 +1,9 @@
 import serial
 import xbee
-import sys #handle cmd_line args
+import sys
 from db import Db
-import binascii, time
+import binascii, time, logging
 from end_device import EndDevice
-from base64 import b16decode
 
 class Coordinator:
 	def __init__(self,port,baude_rate,node_identifier):
@@ -26,19 +25,15 @@ class Coordinator:
 		response_status = []
 		self.xbee.at(frame_id=self.next_frame_id(), command='A2', parameter=b'\x07')
 		response = self.xbee.wait_read_frame()
-		logging.info(response)
 		response_status.append(response['status'])
 		self.xbee.at(frame_id=self.next_frame_id(), command='MY', parameter=b'\xFF\xFF')
 		response = self.xbee.wait_read_frame()
-		logging.info(response)
 		response_status.append(response['status'])
 		self.xbee.at(frame_id=self.next_frame_id(), command='AP', parameter=b'\x02')
 		response = self.xbee.wait_read_frame()
-		logging.info(response)
 		response_status.append(response['status'])
 		self.xbee.at(frame_id=self.next_frame_id(), command='EE', parameter=b'\x00')
 		response = self.xbee.wait_read_frame()
-		logging.info(response)
 		response_status.append(response['status'])
 
 		self.xbee.at(frame_id=self.next_frame_id(), command='NI', parameter=self.node_identifier)
@@ -51,14 +46,13 @@ class Coordinator:
 		response = self.xbee.wait_read_frame()
 		response_status.append(response['status'])
 
-		if response['status']==b'\x00':
-			print response_status
-			print " Coordinator configuration completed successfully"
-			return True
+		for st in response_status:
+			if st != b'\x00':
+				logging.warning("An error occured while configuring the coordinator xbee node")
+				return False
 		else:
-			print response_status
-			print "An error occurred during configuration : response: ",response
-			return False
+			logging.info("Coordinator configuration completed successfully")
+		return True
 
 	def next_frame_id(self):
 	    if self.current_frame_id<255:
@@ -73,7 +67,6 @@ class Coordinator:
 		devices = db.get_active_sensors()
 		end_device = EndDevice(self, self.xbee)
 		for device in devices:
-			print device
 			end_device.set_destination_addr(binascii.unhexlify(device['serial_id']))
 			status = end_device.configure()
 			if status:
@@ -88,25 +81,22 @@ class Coordinator:
 		return self.base_end_node_identifier + " " + str(self.end_node_counter)
 
 	def collect_data(self):
-		print "Collecting sensor data"
+		logging.info("Collecting sensor data")
 		db = Db()
 		devices = db.get_active_sensors()
-		print devices
 		end_device = EndDevice(self, self.xbee)
 		for device in devices:
-			print "Setting end device address"
 			end_device.set_destination_addr(binascii.unhexlify(device['serial_id']))
-			print "Requesting data from ",device['serial_id'], binascii.unhexlify(device['serial_id'])
+			print "Requestt data from",device['serial_id']
+			logging.info("Requesting data from {}".format(device['serial_id']))
 			response = end_device.request_data()
-			print response
 			if response:
-				print "Data received",response
+				print "Data received:",response
 				response['sensor_id'] = device['id']
 				response['source'] = device['source']
-				print "Saving the data"
 				db.save_data(response)
 			else:
-				print "Device not responding"
+				logging.error("Device not responding")
 
 
 def network_setup(argv):
@@ -118,7 +108,7 @@ def network_setup(argv):
 		port = argv[1]
 	elif len(argv) == 3:
 		port = argv[1]
-		baude_rate = argv[2]
+		baude_rate = int(argv[2])
 	elif len(argv)== 4:
 		port = argv[1]
 		baude_rate = argv[2]

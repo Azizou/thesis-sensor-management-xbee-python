@@ -9,7 +9,7 @@ class Db:
 		cfg = ConfigParser.ConfigParser()
 		cfg.read('config.ini')
 		self.connection = db.connect(cfg.get('database','host'),cfg.get('database','username'),cfg.get('database','password'),cfg.get('database','dbname'))
-		if not self.con:
+		if not self.connection:
 			logging.error("Unable to connect to the database")
 			exit(0)
 		logging.info("Database connection successful.")
@@ -31,6 +31,7 @@ class Db:
 		with self.connection:
 			cur = self.connection.cursor()
 			cur.execute(sql)
+			logging.info("Response saved")
 
 
 
@@ -57,11 +58,10 @@ class Db:
 
 	def get_sensor_info(self,sensor_id):
 		sql = "SELECT minimum_temperature, maximum_temperature, adc_resolution, current_resistor, voltage_resistor, R1, R2 FROM Sensors WHERE active=1 AND id='{0}'".format(sensor_id)
-		print sql
+		# print sql
 		cur = self.connection.cursor(db.cursors.DictCursor)
 		cur.execute(sql)
 		res =  cur.fetchone()
-		print res
 		return res
 
 
