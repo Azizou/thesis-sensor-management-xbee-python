@@ -41,11 +41,6 @@ class Coordinator:
 		logging.info(response)
 		response_status.append(response['status'])
 
-
-		# self.xbee.at(frame_id=self.next_frame_id(), command='KY', parameter=b'\x07\x07\x07\x07\x07\x07\x07\x07\x08\x08\x08\x08\x08\x08\x08\x08')
-		# response = self.xbee.wait_read_frame()
-		# print response
-
 		self.xbee.at(frame_id=self.next_frame_id(), command='NI', parameter=self.node_identifier)
 		response = self.xbee.wait_read_frame()
 		response_status.append(response['status'])
@@ -72,7 +67,7 @@ class Coordinator:
 	        self.current_frame_id = 1
 	    return chr(self.current_frame_id)
 	
-	def setup_end_devices(self,node_identifier):
+	def setup_end_devices(self):
 		db = Db()
 		succes = 0
 		devices = db.get_active_sensors()
@@ -134,11 +129,9 @@ def network_setup(argv):
 	print "Configuring coordinator"
 	status = coord.configure()
 	print "configuration status",status
-
 	if status:
-		base_node_identifier = "END DEVICE"
 		print "Configuring end devices"
-		status = coord.setup_end_devices(base_node_identifier)
+		status = coord.setup_end_devices()
 		if status:
 			print "Network setup completed successfully!"
 		return True,coord

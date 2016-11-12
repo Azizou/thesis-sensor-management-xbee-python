@@ -20,7 +20,6 @@ class EndDevice:
 	#set the  node indicator for each end device
 	#All this either in the xctu-software or using a script (preferable) with command line arguments
 
-
 	""" 
 		set the coordinator address on the end device
 		disable 16 bit communication
@@ -29,41 +28,37 @@ class EndDevice:
 	def configure(self):
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='AP', parameter=b'\x02')
 		response = self.xbee.wait_read_frame()
-		# print response
-
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='CE', parameter=b'\x00')
 		response = self.xbee.wait_read_frame()
-		# print response
+		
 
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='A1', parameter=b'\x07')
 		response = self.xbee.wait_read_frame()
-		# print response
+		
 
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='DL', parameter=self.sl)
 		response = self.xbee.wait_read_frame()
-		# print response
+		
 
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='DH', parameter=self.sh)
 		response = self.xbee.wait_read_frame()
-		# print response
+		
 
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='MY', parameter=b'\xFF\xFF')
 		response = self.xbee.wait_read_frame()
-		# print response
+		
 
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='EE', parameter=b'\x00')
 		response = self.xbee.wait_read_frame()
-		# print response
-		# self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='KY', parameter=b'\x07\x07\x07\x07\x07\x07\x07\x07\x08\x08\x08\x08\x08\x08\x08\x08')
-		# response = self.xbee.wait_read_frame()
-		# logging.info(response)
+		
 
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='NI', parameter=self.coord.next_end_node_identifier())
 		response = self.xbee.wait_read_frame()
-		# print response
+		
 
 		self.xbee.remote_at(dest_addr_long=self.dest_addr, frame_id=self.coord.next_frame_id(), command='WR')
 		response = self.xbee.wait_read_frame()
+		
 
 		if response['status'] ==b'\x00':
 			return True
